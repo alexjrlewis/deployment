@@ -8,12 +8,12 @@
 
 main(){
   source config.sh
-  cd ~/${PROJECT}
+  cd /home/${USER}/${PROJECT}
   source venv/bin/activate
   git pull
-  ~/deployment/stop
+  /home/${USER}/deployment/stop
   flask db upgrade
-  ~/deployment/start
+  /home/${USER}/deployment/start
 }
 
 main

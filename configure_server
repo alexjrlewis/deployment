@@ -143,10 +143,12 @@ create_log_files() {
 }
 
 #######################################
-# Clones the project from a repository.
+# Clones the project from a repository via SSH. You must add the public
+# key generated with ssh-keygen to https://github.com/settings/keys. Don't
+# forget to authenticate your connection with ssh -T git@github.com.
 #######################################
 clone_project() {
-  git clone https://github.com/${GITHUB_USERNAME}/${PROJECT}.git
+  git clone git@github.com:${GITHUB_USERNAME}/${PROJECT}.git
 }
 
 #######################################

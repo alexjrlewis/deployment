@@ -1,0 +1,215 @@
+#! /bin/bash
+#
+# Executable script to configure the server for a flask application. Should
+# be executed by a user that has sudo privileges.
+# 
+
+#######################################
+# Computes and sets the number of workers for supervisor,
+# using a simple relation to the number of cores.
+#######################################
+compute_number_of_workers() {
+  N_CORES=$(nproc --all)
+  let "N_WORKERS = 2 * $N_CORES + 1"
+}
+
+#######################################
+# Edits the sshd_config file such that root logins are
+# not allowed.
+#######################################
+configure_sshd() {
+  sudo sed -i 's/PermitRootLogin yes/PermitRootLogin no/g' /etc/ssh/sshd_config
+  sudo sed -i 's/PasswordAuthentication yes/PasswordAuthentication no/g' /etc/ssh/sshd_config
+  sudo service ssh restart
+}
+
+#######################################
+# Installs and configures ufw, the Uncomplicated Firewall,
+# and configures it to only allow external traffic on
+# port 22 (ssh), 80 (http) and 443 (https). Any other ports
+# will not be allowed.
+#######################################
+setup_firewall() {
+  sudo apt-get install -y ufw
+  sudo ufw allow ssh
+  sudo ufw allow http
+  sudo ufw allow http/tcp
+  sudo ufw allow 443/tcp
+  sudo ufw --force enable
+  sudo ufw status
+}
+
+#######################################
+#Installs the database required for a project.
+#######################################
+configure_database() {
+  sudo apt-get -y install sqlite3  
+}
+
+#######################################
+# Installs python v3.7 on this server. This function also
+# generates a virtual environment and installs the requirements
+# of the project with pip. A pure Python web server (gunicorn)
+# is also installed.
+#######################################
+configure_python3() {
+  sudo apt install -y software-properties-common
+  sudo add-apt-repository ppa:deadsnakes/ppa
+  sudo apt install -y python3.7
+  sudo apt-get install -y python3.7-venv
+  python3.7 -m venv "${DIR_PROJECT}/venv"
+  source "${DIR_PROJECT}/venv/bin/activate"
+  python3.7 -m pip install --upgrade pip
+  python3.7 -m pip install -r "${DIR_PROJECT}/requirements.txt"
+  python3.7 -m pip install gunicorn
+}
+
+#######################################
+# Configures nginx.
+# listen on port 80 (http)
+# listen on port 443 (https)
+# forward application requests to the gunicorn server
+#######################################
+configure_nginx() {
+  sudo apt-get -y install nginx
+  sudo rm -f /etc/nginx/sites-enabled/default
+
+  sudo /bin/su -c "echo '' > ${NGINX_CONF}"
+  sudo /bin/su -c "echo 'server {' >> ${NGINX_CONF}"
+  sudo /bin/su -c "echo '  listen 80;' >> ${NGINX_CONF}"
+
+  sudo /bin/su -c "echo '  server_name _;' >> ${NGINX_CONF}"
+  # sudo /bin/su -c "echo '  server_name ${PROJECT} www.${PROJECT};' >> ${NGINX_CONF}"
+
+  sudo /bin/su -c "echo '  location / {' >> ${NGINX_CONF}"
+  sudo /bin/su -c "echo '    return 301 https://\$host\$request_uri;' >> ${NGINX_CONF}"
+  sudo /bin/su -c "echo '  }' >> ${NGINX_CONF}"
+  sudo /bin/su -c "echo '}' >> ${NGINX_CONF}"
+  sudo /bin/su -c "echo '' >> ${NGINX_CONF}"
+  sudo /bin/su -c "echo 'server {' >> ${NGINX_CONF}"
+  sudo /bin/su -c "echo '  listen 443 ssl;' >> ${NGINX_CONF}"
+  sudo /bin/su -c "echo '  server_name _;' >> ${NGINX_CONF}"
+  sudo /bin/su -c "echo '  ssl_certificate ${DIR_PROJECT}certs/cert.pem;' >> ${NGINX_CONF}"
+  sudo /bin/su -c "echo '  ssl_certificate_key ${DIR_PROJECT}certs/key.pem;' >> ${NGINX_CONF}"
+  sudo /bin/su -c "echo '  access_log /var/log/${PROJECT}_access.log;' >> ${NGINX_CONF}"
+  sudo /bin/su -c "echo '  error_log /var/log/${PROJECT}_error.log;' >> ${NGINX_CONF}"
+  sudo /bin/su -c "echo '  location / {' >> ${NGINX_CONF}"
+  sudo /bin/su -c "echo '    proxy_pass http://localhost:${PORT};' >> ${NGINX_CONF}"
+  sudo /bin/su -c "echo '    proxy_redirect off;' >> ${NGINX_CONF}"
+  sudo /bin/su -c "echo '    proxy_set_header Host \$host;' >> ${NGINX_CONF}"
+  sudo /bin/su -c "echo '    proxy_set_header X-Real-IP \$remote_addr;' >> ${NGINX_CONF}"
+  sudo /bin/su -c "echo '    proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;' >> ${NGINX_CONF}"
+  sudo /bin/su -c "echo '  }' >> ${NGINX_CONF}"
+  sudo /bin/su -c "echo '  location /static {' >> ${NGINX_CONF}"
+  sudo /bin/su -c "echo '    alias ${DIR_PROJECT}${PROJECT}/app/static;' >> ${NGINX_CONF}"
+  sudo /bin/su -c "echo '    expires 30d;' >> ${NGINX_CONF}"
+  sudo /bin/su -c "echo '  }' >> ${NGINX_CONF}"
+  sudo /bin/su -c "echo '}' >> ${NGINX_CONF}"
+  
+  sudo systemctl restart nginx
+  sudo service nginx start
+  sudo service nginx reload
+
+  sudo ln -s /etc/nginx/sites-available/${PROJECT} /etc/nginx/sites-enabled
+
+}
+
+#######################################
+# Configures supervisor to watch over the
+# application running.
+#######################################
+configure_supervisor() {
+  sudo apt-get -y install supervisor
+  sudo /bin/su -c "echo '[program:${PROJECT}]' > ${SUPERVISOR_CONF}"
+  sudo /bin/su -c "echo 'directory=${DIR_PROJECT}${PROJECT}' >> ${SUPERVISOR_CONF}"
+  sudo /bin/su -c "echo 'command=${DIR_PROJECT}venv/bin/gunicorn -b localhost:${PORT} -w ${N_WORKERS} wsgi:app' >> ${SUPERVISOR_CONF}"
+  sudo /bin/su -c "echo 'user=${USER}' >> ${SUPERVISOR_CONF}"
+  sudo /bin/su -c "echo 'autostart=true' >> ${SUPERVISOR_CONF}"
+  sudo /bin/su -c "echo 'autorestart=true' >> ${SUPERVISOR_CONF}"
+  sudo /bin/su -c "echo 'stopasgroup=true' >> ${SUPERVISOR_CONF}"
+  sudo /bin/su -c "echo 'killasgroup=true' >> ${SUPERVISOR_CONF}"
+  sudo /bin/su -c "echo 'stderr_logfile=${ERR_FILE}' >> ${SUPERVISOR_CONF}"
+  sudo /bin/su -c "echo 'stdout_logfile=${OUT_FILE}' >> ${SUPERVISOR_CONF}"
+  sudo supervisorctl reload
+}
+
+#######################################
+# Generates the log files for the project. 
+#######################################
+create_log_files() {
+  sudo mkdir -p "/var/log/${PROJECT}"
+  sudo /bin/su -c "echo '' > ${ERR_FILE}"
+  sudo /bin/su -c "echo '' > ${OUT_FILE}"
+}
+
+#######################################
+# Clones the project from a repository.
+#######################################
+clone_project() {
+  git clone https://github.com/${GITHUB_USERNAME}/${PROJECT}.git
+}
+
+#######################################
+# Installs PHP.
+#######################################
+configure_php() {
+  sudo apt install php7.2 -cli -y
+}
+
+#######################################
+# Generates 
+#######################################
+make_self_assigned_certificates() {
+  mkdir "${DIR_PROJECT}certs"
+  openssl req -new -newkey rsa:4096 -days 365 -nodes -x509 \
+    -keyout "${DIR_PROJECT}certs/"key.pem -out "${DIR_PROJECT}certs/"cert.pem
+}
+
+#######################################
+# Configures and installs the certificate bot. See:
+#     https://www.digitalocean.com/community/tutorials/how-to-serve-flask-applications-with-gunicorn-and-nginx-on-ubuntu-18-04
+#######################################
+configure_certbot() {
+  # sudo add-apt-repository ppa:certbot/certbot
+  # sudo apt install python-certbot-nginx
+  # sudo certbot --nginx -d ${PROJECT} -d www.${PROJECT}
+  # "/etc/letsencrypt/live/${PROJECT}/fullchain.pem"
+  # "/etc/letsencrypt/live/${PROJECT}/privkey.pem"
+}
+
+
+#######################################
+# Sets up the server based for a given project.
+#######################################
+main() {
+
+  source config.sh
+
+  DIR_PROJECT="~/${PROJECT}/"
+  SUPERVISOR_CONF="/etc/supervisor/conf.d/${PROJECT}.conf"
+  NGINX_CONF="/etc/nginx/sites-enabled/${PROJECT}"
+  ERR_FILE="/var/log/${PROJECT}/${PROJECT}.err.log"
+  OUT_FILE="/var/log/${PROJECT}/${PROJECT}.out.log"
+
+  sudo apt update
+  compute_number_of_workers
+  
+  cd ~/
+  clone_project
+  cd ${DIR_PROJECT}
+
+  create_log_files
+  
+  configure_sshd
+  setup_firewall
+
+  configure_supervisor
+  configure_nginx
+
+  configure_database
+  configure_python3
+  configure_php
+
+}
+
+main

@@ -1,0 +1,12 @@
+#! /bin/bash
+
+main() {
+  vagrant up
+  vagrant plugin install vagrant-scp
+  vagrant scp configure-server :~/
+  # vagrant ssh
+}
+
+main
+
+vagrant ${PROJECT} :~/

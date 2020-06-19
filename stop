@@ -1,0 +1,12 @@
+#! /bin/bash
+# 
+# This script informs supervisor to stop a given project that is specified in
+# the config.sh file.
+# 
+
+main() {
+  source config.sh
+  sudo supervisorctl stop ${PROJECT}
+}
+
+main

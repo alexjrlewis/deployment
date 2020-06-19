@@ -1,0 +1,19 @@
+#! /bin/bash
+# 
+# This script pulls the latest version of the github repository for a project. 
+# Supervisor is used to stop the current gunicorn command that runs the
+# website. Any updates to the flask application are made and then supervisor
+# starts a new server.
+# 
+
+main(){
+  source config.sh
+  cd ~/${PROJECT}
+  source venv/bin/activate
+  git pull
+  ~/deployment/stop
+  flask db upgrade
+  ~/deployment/start
+}
+
+main

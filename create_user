@@ -1,0 +1,29 @@
+#! /bin/bash
+#
+# Create sudo user.
+#
+
+list_users() {
+  cat /etc/passwd | cut -d: -f1  # list all users
+}
+
+create_user() {
+  sudo useradd -m -s $(which bash) -p $(openssl passwd -1 ${SUDO_PASSWORD}) -G sudo ${SUDO_USERNAME}
+}
+
+delete_user() {
+  deluser --remove-all-files ${USERNAME}
+}
+
+make_ssh() {
+  mkdir -p /home/${USER}/.ssh
+  touch /home/${USER}/.ssh/authorized_keys
+  chmod 700 /home/${USER}/.ssh
+  chmod 644 /home/${USER}/.ssh/authorized_keys
+}
+
+main() {
+  source config.sh
+}
+
+main

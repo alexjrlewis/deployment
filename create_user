@@ -23,7 +23,7 @@ make_ssh() {
 }
 
 main() {
-  source config.sh
+  source /home/${USER}/deployment/.env
 }
 
 main

@@ -5,7 +5,7 @@
 # 
 
 main() {
-  source config.sh
+  source /home/${USER}/deployment/.env
   sudo supervisorctl stop ${PROJECT}
 }
 

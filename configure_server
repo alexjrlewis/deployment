@@ -186,9 +186,9 @@ configure_certbot() {
 #######################################
 main() {
 
-  source config.sh
+  source /home/${USER}/deployment/.env
 
-  DIR_PROJECT="~/${PROJECT}/"
+  DIR_PROJECT="/home/${USER}/${PROJECT}/"
   SUPERVISOR_CONF="/etc/supervisor/conf.d/${PROJECT}.conf"
   NGINX_CONF="/etc/nginx/sites-enabled/${PROJECT}"
   ERR_FILE="/var/log/${PROJECT}/${PROJECT}.err.log"
@@ -197,7 +197,7 @@ main() {
   sudo apt update
   compute_number_of_workers
   
-  cd ~/
+  cd /home/${USER}/
   clone_project
   cd ${DIR_PROJECT}
 

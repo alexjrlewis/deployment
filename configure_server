@@ -172,6 +172,7 @@ make_self_assigned_certificates() {
 #     https://www.digitalocean.com/community/tutorials/how-to-serve-flask-applications-with-gunicorn-and-nginx-on-ubuntu-18-04
 #######################################
 configure_certbot() {
+  echo ""
   # sudo add-apt-repository ppa:certbot/certbot
   # sudo apt install python-certbot-nginx
   # sudo certbot --nginx -d ${PROJECT} -d www.${PROJECT}

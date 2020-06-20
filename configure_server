@@ -89,10 +89,14 @@ configure_nginx() {
   sudo /bin/su -c "echo 'server {' >> ${NGINX_CONF}"
   sudo /bin/su -c "echo '  listen 443 ssl;' >> ${NGINX_CONF}"
   sudo /bin/su -c "echo '  server_name _;' >> ${NGINX_CONF}"
-  sudo /bin/su -c "echo '  ssl_certificate ${DIR_PROJECT}certs/cert.pem;' >> ${NGINX_CONF}"
-  sudo /bin/su -c "echo '  ssl_certificate_key ${DIR_PROJECT}certs/key.pem;' >> ${NGINX_CONF}"
-  sudo /bin/su -c "echo '  access_log /var/log/${PROJECT}_access.log;' >> ${NGINX_CONF}"
-  sudo /bin/su -c "echo '  error_log /var/log/${PROJECT}_error.log;' >> ${NGINX_CONF}"
+
+# "/etc/letsencrypt/live/${PROJECT}/fullchain.pem"
+# "/etc/letsencrypt/live/${PROJECT}/privkey.pem"
+
+  sudo /bin/su -c "echo '  ssl_certificate ${DIR_PROJECT}${PROJECT}/certs/cert.pem;' >> ${NGINX_CONF}"
+  sudo /bin/su -c "echo '  ssl_certificate_key ${DIR_PROJECT}${PROJECT}/certs/key.pem;' >> ${NGINX_CONF}"
+  sudo /bin/su -c "echo '  access_log /var/log/${PROJECT}/${PROJECT}_access.log;' >> ${NGINX_CONF}"
+  sudo /bin/su -c "echo '  error_log /var/log/${PROJECT}/${PROJECT}_error.log;' >> ${NGINX_CONF}"
   sudo /bin/su -c "echo '  location / {' >> ${NGINX_CONF}"
   sudo /bin/su -c "echo '    proxy_pass http://localhost:${PORT};' >> ${NGINX_CONF}"
   sudo /bin/su -c "echo '    proxy_redirect off;' >> ${NGINX_CONF}"
@@ -159,26 +163,18 @@ configure_php() {
 }
 
 #######################################
-# Generates 
-#######################################
-make_self_assigned_certificates() {
-  mkdir "${DIR_PROJECT}certs"
-  openssl req -new -newkey rsa:4096 -days 365 -nodes -x509 \
-    -keyout "${DIR_PROJECT}certs/"key.pem -out "${DIR_PROJECT}certs/"cert.pem
-}
-
-#######################################
 # Configures and installs the certificate bot. See:
 #     https://www.digitalocean.com/community/tutorials/how-to-serve-flask-applications-with-gunicorn-and-nginx-on-ubuntu-18-04
 #######################################
-configure_certbot() {
-  echo ""
-  # sudo add-apt-repository ppa:certbot/certbot
-  # sudo apt install python-certbot-nginx
-  # sudo certbot --nginx -d ${PROJECT} -d www.${PROJECT}
-  # "/etc/letsencrypt/live/${PROJECT}/fullchain.pem"
-  # "/etc/letsencrypt/live/${PROJECT}/privkey.pem"
-}
+# configure_certbot() {
+# 1) self-assigned certificates:
+#   sudo apt install openssl
+#   openssl req -x509 -newkey rsa:4096 -nodes -out ${DIR_PROJECT}/${PROJECT}/certs/cert.pem -keyout ${DIR_PROJECT}/${PROJECT}/certs/key.pem -days 365
+# 2) the proper way:
+#   sudo add-apt-repository ppa:certbot/certbot
+#   sudo apt install python-certbot-nginx
+#   sudo certbot --nginx -d ${PROJECT} -d www.${PROJECT}
+# }
 
 
 #######################################

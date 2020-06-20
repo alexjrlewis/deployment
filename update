@@ -11,9 +11,9 @@ main(){
   cd /home/${USER}/${PROJECT}
   source venv/bin/activate
   git pull
-  ./home/${USER}/deployment/stop
+  /home/${USER}/deployment/stop
   # flask db upgrade
-  ./home/${USER}/deployment/start
+  /home/${USER}/deployment/start
 }
 
 main

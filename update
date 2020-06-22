@@ -22,7 +22,7 @@ main() {
   echo "git pull > /dev/null"
   git pull > /dev/null
   echo "supervisorctl restart ${PROJECT}"
-  supervisorctl restart ${PROJECT} > /dev/null
+  supervisorctl start ${PROJECT} > /dev/null
   return 0
 
 }

@@ -6,7 +6,7 @@
 
 main() {
   source /home/${USER}/deployment/.env
-  sudo supervisorctl start ${PROJECT}
+  supervisorctl start ${PROJECT}
 }
 
 main

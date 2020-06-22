@@ -6,7 +6,7 @@
 
 main() {
   source /home/${USER}/deployment/.env
-  sudo supervisorctl stop ${PROJECT}
+  supervisorctl stop ${PROJECT}
 }
 
 main

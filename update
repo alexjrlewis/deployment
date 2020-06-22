@@ -19,8 +19,11 @@ main() {
   source /home/${USER}/deployment/.env
   cd /home/${USER}/${PROJECT}
   source venv/bin/activate
+  echo "supervisorctl stop ${PROJECT}"
   supervisorctl stop ${PROJECT}
+  echo "git pull > /dev/null"
   git pull > /dev/null
+  echo "supervisorctl start ${PROJECT}"
   supervisorctl start ${PROJECT}
   return 0
 

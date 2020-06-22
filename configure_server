@@ -188,6 +188,7 @@ configure_php() {
 #######################################
 main() {
 
+  USER=$(whoami)
   source /home/${USER}/deployment/.env
 
   DIR_PROJECT="/home/${USER}/${PROJECT}/"

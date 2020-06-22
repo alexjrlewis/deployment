@@ -7,6 +7,7 @@
 # 
 
 main() {
+  USER=$(whoami)
   source /home/${USER}/deployment/.env
   cd /home/${USER}/${PROJECT}
   source venv/bin/activate

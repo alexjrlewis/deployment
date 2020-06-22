@@ -120,7 +120,9 @@ configure_nginx() {
 
 #######################################
 # Configures supervisor to watch over the
-# application running.
+# application running. We need to change the permissions on the
+# supervisor.sock file so that our sudo user can can execute the 
+# update script after pull requests have been made.
 #######################################
 configure_supervisor() {
   sudo apt-get -y install supervisor
@@ -134,6 +136,10 @@ configure_supervisor() {
   sudo /bin/su -c "echo 'killasgroup=true' >> ${SUPERVISOR_CONF}"
   sudo /bin/su -c "echo 'stderr_logfile=${ERR_FILE}' >> ${SUPERVISOR_CONF}"
   sudo /bin/su -c "echo 'stdout_logfile=${OUT_FILE}' >> ${SUPERVISOR_CONF}"
+  sudo /bin/su -c "echo '[unix_http_server]' >> ${SUPERVISOR_CONF}"
+  sudo /bin/su -c "echo 'file=/var/run/supervisor.sock' >> ${SUPERVISOR_CONF}"
+  sudo /bin/su -c "echo 'chmod=0770' >> ${SUPERVISOR_CONF}"
+  sudo /bin/su -c "echo 'chown=root:sudo' >> ${SUPERVISOR_CONF}"
   sudo supervisorctl reload
 }
 

@@ -6,7 +6,7 @@
 # starts a new server.
 # 
 
-main(){
+main() {
   source /home/${USER}/deployment/.env
   cd /home/${USER}/${PROJECT}
   source venv/bin/activate
@@ -14,6 +14,7 @@ main(){
   /home/${USER}/deployment/stop
   # flask db upgrade
   /home/${USER}/deployment/start
+  return 0
 }
 
 main

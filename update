@@ -20,11 +20,11 @@ main() {
   cd /home/${USER}/${PROJECT}
   source venv/bin/activate
   echo "supervisorctl stop ${PROJECT}"
-  supervisorctl stop ${PROJECT}
+  supervisorctl stop ${PROJECT} > /dev/null
   echo "git pull > /dev/null"
   git pull > /dev/null
   echo "supervisorctl start ${PROJECT}"
-  supervisorctl start ${PROJECT}
+  supervisorctl start ${PROJECT} > /dev/null
   return 0
 
 }

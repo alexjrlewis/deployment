@@ -8,6 +8,7 @@ main() {
   USER=$(whoami)
   source /home/${USER}/deployment/.env
   supervisorctl stop ${PROJECT}
+  return 0
 }
 
 main

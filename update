@@ -21,7 +21,7 @@ main() {
   source venv/bin/activate
   echo "git pull > /dev/null"
   git pull > /dev/null
-  echo "supervisorctl restart ${PROJECT}"
+  echo "supervisorctl start ${PROJECT}"
   supervisorctl start ${PROJECT} > /dev/null
   return 0
 

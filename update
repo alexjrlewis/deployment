@@ -8,23 +8,12 @@
 
 main() {
   USER=$(whoami)
-  # source /home/${USER}/deployment/.env
-  # cd /home/${USER}/${PROJECT}
-  # source venv/bin/activate
-  # /home/${USER}/deployment/stop
-  # git pull
-  # flask db upgrade
-  # /home/${USER}/deployment/start
-
   source /home/${USER}/deployment/.env
   cd /home/${USER}/${PROJECT}
   source venv/bin/activate
-  echo "git pull > /dev/null"
   git pull > /dev/null
-  echo "supervisorctl restart ${PROJECT}"
-  supervisorctl restart ${PROJECT} > /dev/null
+  supervisorctl start ${PROJECT} > /dev/null
   return 0
-
 }
 
 main

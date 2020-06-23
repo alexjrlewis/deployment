@@ -5,8 +5,7 @@
 # 
 
 main() {
-  USER=$(whoami)
-  source /home/${USER}/deployment/.env
+  source .env
   supervisorctl start ${GITHUB_REPO}
 }
 

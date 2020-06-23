@@ -7,7 +7,6 @@
 main() {
   source .env
   supervisorctl stop ${GITHUB_REPO}
-  return 0
 }
 
 main

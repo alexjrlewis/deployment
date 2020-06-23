@@ -44,7 +44,6 @@ setup_firewall() {
 #######################################
 configure_database() {
   sudo apt-get -y install sqlite3
-  # sudo apt-get -y install sqlite3  
 }
 
 #######################################
@@ -72,50 +71,53 @@ configure_python3() {
 # forward application requests to the gunicorn server
 #######################################
 configure_nginx() {
+
+  _NGINX_SITES_ENABLED=/etc/nginx/sites-enabled/${GITHUB_REPO}
+
   sudo apt-get -y install nginx
   sudo rm -f /etc/nginx/sites-enabled/default
 
-  sudo /bin/su -c "echo '' > ${NGINX_ERROR_LOG}"
-  sudo /bin/su -c "echo 'server {' >> ${NGINX_ERROR_LOG}"
-  sudo /bin/su -c "echo '  listen 80;' >> ${NGINX_ERROR_LOG}"
+  sudo /bin/su -c "echo '' > ${_NGINX_SITES_ENABLED}"
+  sudo /bin/su -c "echo 'server {' >> ${_NGINX_SITES_ENABLED}"
+  sudo /bin/su -c "echo '  listen 80;' >> ${_NGINX_SITES_ENABLED}"
 
-  sudo /bin/su -c "echo '  server_name _;' >> ${NGINX_ERROR_LOG}"
-  # sudo /bin/su -c "echo '  server_name ${GITHUB_REPO} www.${GITHUB_REPO};' >> ${NGINX_ERROR_LOG}"
+  # sudo /bin/su -c "echo '  server_name ${GITHUB_REPO} www.${GITHUB_REPO};' >> ${_NGINX_SITES_ENABLED}"
+  sudo /bin/su -c "echo '  server_name _;' >> ${_NGINX_SITES_ENABLED}"
 
-  sudo /bin/su -c "echo '  location / {' >> ${NGINX_ERROR_LOG}"
-  sudo /bin/su -c "echo '    return 301 https://\$host\$request_uri;' >> ${NGINX_ERROR_LOG}"
-  sudo /bin/su -c "echo '  }' >> ${NGINX_ERROR_LOG}"
-  sudo /bin/su -c "echo '}' >> ${NGINX_ERROR_LOG}"
-  sudo /bin/su -c "echo '' >> ${NGINX_ERROR_LOG}"
-  sudo /bin/su -c "echo 'server {' >> ${NGINX_ERROR_LOG}"
-  sudo /bin/su -c "echo '  listen 443 ssl;' >> ${NGINX_ERROR_LOG}"
-  sudo /bin/su -c "echo '  server_name _;' >> ${NGINX_ERROR_LOG}"
+  sudo /bin/su -c "echo '  location / {' >> ${_NGINX_SITES_ENABLED}"
+  sudo /bin/su -c "echo '    return 301 https://\$host\$request_uri;' >> ${_NGINX_SITES_ENABLED}"
+  sudo /bin/su -c "echo '  }' >> ${_NGINX_SITES_ENABLED}"
+  sudo /bin/su -c "echo '}' >> ${_NGINX_SITES_ENABLED}"
+  sudo /bin/su -c "echo '' >> ${_NGINX_SITES_ENABLED}"
+  sudo /bin/su -c "echo 'server {' >> ${_NGINX_SITES_ENABLED}"
+  sudo /bin/su -c "echo '  listen 443 ssl;' >> ${_NGINX_SITES_ENABLED}"
+  sudo /bin/su -c "echo '  server_name _;' >> ${_NGINX_SITES_ENABLED}"
 
-# "/etc/letsencrypt/live/${GITHUB_REPO}/fullchain.pem"
-# "/etc/letsencrypt/live/${GITHUB_REPO}/privkey.pem"
-  sudo /bin/su -c "echo '  ssl_certificate ${DIR_GITHUB_REPO}${GITHUB_REPO}/certs/cert.pem;' >> ${NGINX_ERROR_LOG}"
-  sudo /bin/su -c "echo '  ssl_certificate_key ${DIR_GITHUB_REPO}${GITHUB_REPO}/certs/key.pem;' >> ${NGINX_ERROR_LOG}"
+  # sudo /bin/su -c "echo '  ssl_certificate /etc/letsencrypt/live/${GITHUB_REPO}/fullchain.pem;' >> ${_NGINX_SITES_ENABLED}"
+  # sudo /bin/su -c "echo '  ssl_certificate_key /etc/letsencrypt/live/${GITHUB_REPO}/privkey.pem;' >> ${_NGINX_SITES_ENABLED}"
+  sudo /bin/su -c "echo '  ssl_certificate ${DIR_GITHUB_REPO}${GITHUB_REPO}/certs/cert.pem;' >> ${_NGINX_SITES_ENABLED}"
+  sudo /bin/su -c "echo '  ssl_certificate_key ${DIR_GITHUB_REPO}${GITHUB_REPO}/certs/key.pem;' >> ${_NGINX_SITES_ENABLED}"
   
-  sudo /bin/su -c "echo '  access_log ${NGINX_ACCESS_LOG};' >> ${NGINX_ERROR_LOG}"
-  sudo /bin/su -c "echo '  error_log ${NGINX_ERROR_LOG};' >> ${NGINX_ERROR_LOG}"
-  sudo /bin/su -c "echo '  location / {' >> ${NGINX_ERROR_LOG}"
-  sudo /bin/su -c "echo '    proxy_pass http://localhost:${PORT};' >> ${NGINX_ERROR_LOG}"
-  sudo /bin/su -c "echo '    proxy_redirect off;' >> ${NGINX_ERROR_LOG}"
-  sudo /bin/su -c "echo '    proxy_set_header Host \$host;' >> ${NGINX_ERROR_LOG}"
-  sudo /bin/su -c "echo '    proxy_set_header X-Real-IP \$remote_addr;' >> ${NGINX_ERROR_LOG}"
-  sudo /bin/su -c "echo '    proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;' >> ${NGINX_ERROR_LOG}"
-  sudo /bin/su -c "echo '  }' >> ${NGINX_ERROR_LOG}"
-  sudo /bin/su -c "echo '  location /static {' >> ${NGINX_ERROR_LOG}"
-  sudo /bin/su -c "echo '    alias ${DIR_GITHUB_REPO}${GITHUB_REPO}/app/static;' >> ${NGINX_ERROR_LOG}"
-  sudo /bin/su -c "echo '    expires 30d;' >> ${NGINX_ERROR_LOG}"
-  sudo /bin/su -c "echo '  }' >> ${NGINX_ERROR_LOG}"
-  sudo /bin/su -c "echo '}' >> ${NGINX_ERROR_LOG}"
+  sudo /bin/su -c "echo '  access_log ${NGINX_ACCESS_LOG};' >> ${_NGINX_SITES_ENABLED}"
+  sudo /bin/su -c "echo '  error_log ${NGINX_ERROR_LOG};' >> ${_NGINX_SITES_ENABLED}"
+  sudo /bin/su -c "echo '  location / {' >> ${_NGINX_SITES_ENABLED}"
+  sudo /bin/su -c "echo '    proxy_pass http://localhost:${PORT};' >> ${_NGINX_SITES_ENABLED}"
+  sudo /bin/su -c "echo '    proxy_redirect off;' >> ${_NGINX_SITES_ENABLED}"
+  sudo /bin/su -c "echo '    proxy_set_header Host \$host;' >> ${_NGINX_SITES_ENABLED}"
+  sudo /bin/su -c "echo '    proxy_set_header X-Real-IP \$remote_addr;' >> ${_NGINX_SITES_ENABLED}"
+  sudo /bin/su -c "echo '    proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;' >> ${_NGINX_SITES_ENABLED}"
+  sudo /bin/su -c "echo '  }' >> ${_NGINX_SITES_ENABLED}"
+  sudo /bin/su -c "echo '  location /static {' >> ${_NGINX_SITES_ENABLED}"
+  sudo /bin/su -c "echo '    alias ${DIR_GITHUB_REPO}${GITHUB_REPO}/app/static;' >> ${_NGINX_SITES_ENABLED}"
+  sudo /bin/su -c "echo '    expires 30d;' >> ${_NGINX_SITES_ENABLED}"
+  sudo /bin/su -c "echo '  }' >> ${_NGINX_SITES_ENABLED}"
+  sudo /bin/su -c "echo '}' >> ${_NGINX_SITES_ENABLED}"
   
   sudo systemctl restart nginx
   sudo service nginx start
   sudo service nginx reload
 
-  sudo ln -s /etc/nginx/sites-available/${GITHUB_REPO} /etc/nginx/sites-enabled
+  # sudo ln -s /etc/nginx/sites-available/${GITHUB_REPO} /etc/nginx/sites-enabled
 
 }
 
@@ -172,22 +174,22 @@ clone_project() {
 # Installs PHP.
 #######################################
 configure_php() {
-  sudo apt install php7.2 -cli -y
+  sudo apt-get install php7.2 -y
 }
 
 #######################################
 # Configures and installs the certificate bot. See:
 #     https://www.digitalocean.com/community/tutorials/how-to-serve-flask-applications-with-gunicorn-and-nginx-on-ubuntu-18-04
 #######################################
-# configure_certbot() {
-# 1) self-assigned certificates:
-#   sudo apt install openssl
-#   openssl req -x509 -newkey rsa:4096 -nodes -out ${DIR_GITHUB_REPO}/${GITHUB_REPO}/certs/cert.pem -keyout ${DIR_GITHUB_REPO}/${GITHUB_REPO}/certs/key.pem -days 365
-# 2) the proper way:
-#   sudo add-apt-repository ppa:certbot/certbot
-#   sudo apt install python-certbot-nginx
-#   sudo certbot --nginx -d ${GITHUB_REPO} -d www.${GITHUB_REPO}
-# }
+configure_certbot() {
+  # 1) self-assigned certificates:
+  sudo apt install openssl
+  openssl req -x509 -newkey rsa:4096 -nodes -out ${DIR_GITHUB_REPO}/${GITHUB_REPO}/certs/cert.pem -keyout ${DIR_GITHUB_REPO}/${GITHUB_REPO}/certs/key.pem -days 365
+  # 2) the proper way:
+  # sudo add-apt-repository ppa:certbot/certbot
+  # sudo apt install python-certbot-nginx
+  # sudo certbot --nginx -d ${GITHUB_REPO} -d www.${GITHUB_REPO}
+}
 
 
 #######################################
@@ -211,7 +213,7 @@ main() {
   
   configure_sshd
   setup_firewall
-
+  configure_certbot
   configure_supervisor
   configure_nginx
 

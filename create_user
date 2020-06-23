@@ -3,14 +3,23 @@
 # Create sudo user.
 #
 
+#######################################
+# This method lists all the users.
+#######################################
 list_users() {
-  cat /etc/passwd | cut -d: -f1  # list all users
+  cat /etc/passwd | cut -d: -f1
 }
 
+#######################################
+# This method creates a sudo user.
+#######################################
 create_user() {
   sudo useradd -m -s $(which bash) -p $(openssl passwd -1 ${SUDO_PASSWORD}) -G sudo ${SUDO_USERNAME}
 }
 
+#######################################
+# This method deletes a user.
+#######################################
 delete_user() {
   deluser --remove-all-files ${USERNAME}
 }
@@ -22,9 +31,12 @@ make_ssh() {
   chmod 644 /home/${USER}/.ssh/authorized_keys
 }
 
+make_github() {
+
+}
+
 main() {
-  USER=$(whoami)
-  source /home/${USER}/deployment/.env
+  source .env
 }
 
 main

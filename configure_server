@@ -43,7 +43,8 @@ setup_firewall() {
 #Installs the database required for a project.
 #######################################
 configure_database() {
-  sudo apt-get -y install sqlite3  
+  sudo apt-get -y install sqlite3
+  # sudo apt-get -y install sqlite3  
 }
 
 #######################################
@@ -57,10 +58,10 @@ configure_python3() {
   sudo add-apt-repository ppa:deadsnakes/ppa
   sudo apt install -y python3.7
   sudo apt-get install -y python3.7-venv
-  python3.7 -m venv "${DIR_PROJECT}/venv"
-  source "${DIR_PROJECT}/venv/bin/activate"
+  python3.7 -m venv "${DIR_GITHUB_REPO}/venv"
+  source "${DIR_GITHUB_REPO}/venv/bin/activate"
   python3.7 -m pip install --upgrade pip
-  python3.7 -m pip install -r "${DIR_PROJECT}/requirements.txt"
+  python3.7 -m pip install -r "${DIR_GITHUB_REPO}/requirements.txt"
   python3.7 -m pip install gunicorn
 }
 
@@ -74,47 +75,47 @@ configure_nginx() {
   sudo apt-get -y install nginx
   sudo rm -f /etc/nginx/sites-enabled/default
 
-  sudo /bin/su -c "echo '' > ${NGINX_CONF}"
-  sudo /bin/su -c "echo 'server {' >> ${NGINX_CONF}"
-  sudo /bin/su -c "echo '  listen 80;' >> ${NGINX_CONF}"
+  sudo /bin/su -c "echo '' > ${NGINX_ERROR_LOG}"
+  sudo /bin/su -c "echo 'server {' >> ${NGINX_ERROR_LOG}"
+  sudo /bin/su -c "echo '  listen 80;' >> ${NGINX_ERROR_LOG}"
 
-  sudo /bin/su -c "echo '  server_name _;' >> ${NGINX_CONF}"
-  # sudo /bin/su -c "echo '  server_name ${PROJECT} www.${PROJECT};' >> ${NGINX_CONF}"
+  sudo /bin/su -c "echo '  server_name _;' >> ${NGINX_ERROR_LOG}"
+  # sudo /bin/su -c "echo '  server_name ${GITHUB_REPO} www.${GITHUB_REPO};' >> ${NGINX_ERROR_LOG}"
 
-  sudo /bin/su -c "echo '  location / {' >> ${NGINX_CONF}"
-  sudo /bin/su -c "echo '    return 301 https://\$host\$request_uri;' >> ${NGINX_CONF}"
-  sudo /bin/su -c "echo '  }' >> ${NGINX_CONF}"
-  sudo /bin/su -c "echo '}' >> ${NGINX_CONF}"
-  sudo /bin/su -c "echo '' >> ${NGINX_CONF}"
-  sudo /bin/su -c "echo 'server {' >> ${NGINX_CONF}"
-  sudo /bin/su -c "echo '  listen 443 ssl;' >> ${NGINX_CONF}"
-  sudo /bin/su -c "echo '  server_name _;' >> ${NGINX_CONF}"
+  sudo /bin/su -c "echo '  location / {' >> ${NGINX_ERROR_LOG}"
+  sudo /bin/su -c "echo '    return 301 https://\$host\$request_uri;' >> ${NGINX_ERROR_LOG}"
+  sudo /bin/su -c "echo '  }' >> ${NGINX_ERROR_LOG}"
+  sudo /bin/su -c "echo '}' >> ${NGINX_ERROR_LOG}"
+  sudo /bin/su -c "echo '' >> ${NGINX_ERROR_LOG}"
+  sudo /bin/su -c "echo 'server {' >> ${NGINX_ERROR_LOG}"
+  sudo /bin/su -c "echo '  listen 443 ssl;' >> ${NGINX_ERROR_LOG}"
+  sudo /bin/su -c "echo '  server_name _;' >> ${NGINX_ERROR_LOG}"
 
-# "/etc/letsencrypt/live/${PROJECT}/fullchain.pem"
-# "/etc/letsencrypt/live/${PROJECT}/privkey.pem"
-
-  sudo /bin/su -c "echo '  ssl_certificate ${DIR_PROJECT}${PROJECT}/certs/cert.pem;' >> ${NGINX_CONF}"
-  sudo /bin/su -c "echo '  ssl_certificate_key ${DIR_PROJECT}${PROJECT}/certs/key.pem;' >> ${NGINX_CONF}"
-  sudo /bin/su -c "echo '  access_log /var/log/${PROJECT}/${PROJECT}_access.log;' >> ${NGINX_CONF}"
-  sudo /bin/su -c "echo '  error_log /var/log/${PROJECT}/${PROJECT}_error.log;' >> ${NGINX_CONF}"
-  sudo /bin/su -c "echo '  location / {' >> ${NGINX_CONF}"
-  sudo /bin/su -c "echo '    proxy_pass http://localhost:${PORT};' >> ${NGINX_CONF}"
-  sudo /bin/su -c "echo '    proxy_redirect off;' >> ${NGINX_CONF}"
-  sudo /bin/su -c "echo '    proxy_set_header Host \$host;' >> ${NGINX_CONF}"
-  sudo /bin/su -c "echo '    proxy_set_header X-Real-IP \$remote_addr;' >> ${NGINX_CONF}"
-  sudo /bin/su -c "echo '    proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;' >> ${NGINX_CONF}"
-  sudo /bin/su -c "echo '  }' >> ${NGINX_CONF}"
-  sudo /bin/su -c "echo '  location /static {' >> ${NGINX_CONF}"
-  sudo /bin/su -c "echo '    alias ${DIR_PROJECT}${PROJECT}/app/static;' >> ${NGINX_CONF}"
-  sudo /bin/su -c "echo '    expires 30d;' >> ${NGINX_CONF}"
-  sudo /bin/su -c "echo '  }' >> ${NGINX_CONF}"
-  sudo /bin/su -c "echo '}' >> ${NGINX_CONF}"
+# "/etc/letsencrypt/live/${GITHUB_REPO}/fullchain.pem"
+# "/etc/letsencrypt/live/${GITHUB_REPO}/privkey.pem"
+  sudo /bin/su -c "echo '  ssl_certificate ${DIR_GITHUB_REPO}${GITHUB_REPO}/certs/cert.pem;' >> ${NGINX_ERROR_LOG}"
+  sudo /bin/su -c "echo '  ssl_certificate_key ${DIR_GITHUB_REPO}${GITHUB_REPO}/certs/key.pem;' >> ${NGINX_ERROR_LOG}"
+  
+  sudo /bin/su -c "echo '  access_log ${NGINX_ACCESS_LOG};' >> ${NGINX_ERROR_LOG}"
+  sudo /bin/su -c "echo '  error_log ${NGINX_ERROR_LOG};' >> ${NGINX_ERROR_LOG}"
+  sudo /bin/su -c "echo '  location / {' >> ${NGINX_ERROR_LOG}"
+  sudo /bin/su -c "echo '    proxy_pass http://localhost:${PORT};' >> ${NGINX_ERROR_LOG}"
+  sudo /bin/su -c "echo '    proxy_redirect off;' >> ${NGINX_ERROR_LOG}"
+  sudo /bin/su -c "echo '    proxy_set_header Host \$host;' >> ${NGINX_ERROR_LOG}"
+  sudo /bin/su -c "echo '    proxy_set_header X-Real-IP \$remote_addr;' >> ${NGINX_ERROR_LOG}"
+  sudo /bin/su -c "echo '    proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;' >> ${NGINX_ERROR_LOG}"
+  sudo /bin/su -c "echo '  }' >> ${NGINX_ERROR_LOG}"
+  sudo /bin/su -c "echo '  location /static {' >> ${NGINX_ERROR_LOG}"
+  sudo /bin/su -c "echo '    alias ${DIR_GITHUB_REPO}${GITHUB_REPO}/app/static;' >> ${NGINX_ERROR_LOG}"
+  sudo /bin/su -c "echo '    expires 30d;' >> ${NGINX_ERROR_LOG}"
+  sudo /bin/su -c "echo '  }' >> ${NGINX_ERROR_LOG}"
+  sudo /bin/su -c "echo '}' >> ${NGINX_ERROR_LOG}"
   
   sudo systemctl restart nginx
   sudo service nginx start
   sudo service nginx reload
 
-  sudo ln -s /etc/nginx/sites-available/${PROJECT} /etc/nginx/sites-enabled
+  sudo ln -s /etc/nginx/sites-available/${GITHUB_REPO} /etc/nginx/sites-enabled
 
 }
 
@@ -126,20 +127,20 @@ configure_nginx() {
 #######################################
 configure_supervisor() {
   sudo apt-get -y install supervisor
-  sudo /bin/su -c "echo '[program:${PROJECT}]' > ${SUPERVISOR_CONF}"
-  sudo /bin/su -c "echo 'directory=${DIR_PROJECT}${PROJECT}' >> ${SUPERVISOR_CONF}"
-  sudo /bin/su -c "echo 'command=${DIR_PROJECT}venv/bin/gunicorn -b localhost:${PORT} -w ${N_WORKERS} wsgi:app' >> ${SUPERVISOR_CONF}"
-  sudo /bin/su -c "echo 'user=${USER}' >> ${SUPERVISOR_CONF}"
-  sudo /bin/su -c "echo 'autostart=true' >> ${SUPERVISOR_CONF}"
-  sudo /bin/su -c "echo 'autorestart=true' >> ${SUPERVISOR_CONF}"
-  sudo /bin/su -c "echo 'stopasgroup=true' >> ${SUPERVISOR_CONF}"
-  sudo /bin/su -c "echo 'killasgroup=true' >> ${SUPERVISOR_CONF}"
-  sudo /bin/su -c "echo 'stderr_logfile=${ERR_FILE}' >> ${SUPERVISOR_CONF}"
-  sudo /bin/su -c "echo 'stdout_logfile=${OUT_FILE}' >> ${SUPERVISOR_CONF}"
-  sudo /bin/su -c "echo '[unix_http_server]' >> ${SUPERVISOR_CONF}"
-  sudo /bin/su -c "echo 'file=/var/run/supervisor.sock' >> ${SUPERVISOR_CONF}"
-  sudo /bin/su -c "echo 'chmod=0770' >> ${SUPERVISOR_CONF}"
-  sudo /bin/su -c "echo 'chown=root:sudo' >> ${SUPERVISOR_CONF}"
+  sudo /bin/su -c "echo '[program:${GITHUB_REPO}]' > /etc/supervisor/conf.d/${GITHUB_REPO}.conf"
+  sudo /bin/su -c "echo 'directory=${DIR_GITHUB_REPO}${GITHUB_REPO}' >> /etc/supervisor/conf.d/${GITHUB_REPO}.conf"
+  sudo /bin/su -c "echo 'command=${DIR_GITHUB_REPO}venv/bin/gunicorn -b localhost:${PORT} -w ${N_WORKERS} wsgi:app' >> /etc/supervisor/conf.d/${GITHUB_REPO}.conf"
+  sudo /bin/su -c "echo 'user=${SERVER_USERNAME}' >> /etc/supervisor/conf.d/${GITHUB_REPO}.conf"
+  sudo /bin/su -c "echo 'autostart=true' >> /etc/supervisor/conf.d/${GITHUB_REPO}.conf"
+  sudo /bin/su -c "echo 'autorestart=true' >> /etc/supervisor/conf.d/${GITHUB_REPO}.conf"
+  sudo /bin/su -c "echo 'stopasgroup=true' >> /etc/supervisor/conf.d/${GITHUB_REPO}.conf"
+  sudo /bin/su -c "echo 'killasgroup=true' >> /etc/supervisor/conf.d/${GITHUB_REPO}.conf"
+  sudo /bin/su -c "echo 'stderr_logfile=${SUPERVISOR_STDER_LOG}' >> /etc/supervisor/conf.d/${GITHUB_REPO}.conf"
+  sudo /bin/su -c "echo 'stdout_logfile=${SUPERVISOR_STDOUT_LOG}' >> /etc/supervisor/conf.d/${GITHUB_REPO}.conf"
+  sudo /bin/su -c "echo '[unix_http_server]' >> /etc/supervisor/conf.d/${GITHUB_REPO}.conf"
+  sudo /bin/su -c "echo 'file=/var/run/supervisor.sock' >> /etc/supervisor/conf.d/${GITHUB_REPO}.conf"
+  sudo /bin/su -c "echo 'chmod=0770' >> /etc/supervisor/conf.d/${GITHUB_REPO}.conf"
+  sudo /bin/su -c "echo 'chown=root:sudo' >> /etc/supervisor/conf.d/${GITHUB_REPO}.conf"
   sudo supervisorctl reload
 }
 
@@ -147,9 +148,15 @@ configure_supervisor() {
 # Generates the log files for the project. 
 #######################################
 create_log_files() {
-  sudo mkdir -p "/var/log/${PROJECT}"
-  sudo /bin/su -c "echo '' > ${ERR_FILE}"
-  sudo /bin/su -c "echo '' > ${OUT_FILE}"
+  sudo mkdir -p "${DIR_LOGS}"
+  SUPERVISOR_STDER_LOG="${DIR_LOGS}supervisor.stder.log"
+  SUPERVISOR_STDOUT_LOG="${DIR_LOGS}supervisor.stdout.log"
+  NGINX_ACCESS_LOG="${DIR_LOGS}nginx.access.log"
+  NGINX_ERROR_LOG="${DIR_LOGS}nginx.error.log"
+  sudo /bin/su -c "echo '' > ${SUPERVISOR_STDER_LOG}"
+  sudo /bin/su -c "echo '' > ${SUPERVISOR_STDOUT_LOG}"
+  sudo /bin/su -c "echo '' > ${NGINX_ACCESS_LOG}"
+  sudo /bin/su -c "echo '' > ${NGINX_ERROR_LOG}"
 }
 
 #######################################
@@ -158,7 +165,7 @@ create_log_files() {
 # forget to authenticate your connection with ssh -T git@github.com.
 #######################################
 clone_project() {
-  git clone git@github.com:${GITHUB_USERNAME}/${PROJECT}.git
+  git clone git@github.com:${GITHUB_USERNAME}/${GITHUB_REPO}.git
 }
 
 #######################################
@@ -175,11 +182,11 @@ configure_php() {
 # configure_certbot() {
 # 1) self-assigned certificates:
 #   sudo apt install openssl
-#   openssl req -x509 -newkey rsa:4096 -nodes -out ${DIR_PROJECT}/${PROJECT}/certs/cert.pem -keyout ${DIR_PROJECT}/${PROJECT}/certs/key.pem -days 365
+#   openssl req -x509 -newkey rsa:4096 -nodes -out ${DIR_GITHUB_REPO}/${GITHUB_REPO}/certs/cert.pem -keyout ${DIR_GITHUB_REPO}/${GITHUB_REPO}/certs/key.pem -days 365
 # 2) the proper way:
 #   sudo add-apt-repository ppa:certbot/certbot
 #   sudo apt install python-certbot-nginx
-#   sudo certbot --nginx -d ${PROJECT} -d www.${PROJECT}
+#   sudo certbot --nginx -d ${GITHUB_REPO} -d www.${GITHUB_REPO}
 # }
 
 
@@ -188,21 +195,17 @@ configure_php() {
 #######################################
 main() {
 
-  USER=$(whoami)
-  source /home/${USER}/deployment/.env
+  source .env
 
-  DIR_PROJECT="/home/${USER}/${PROJECT}/"
-  SUPERVISOR_CONF="/etc/supervisor/conf.d/${PROJECT}.conf"
-  NGINX_CONF="/etc/nginx/sites-enabled/${PROJECT}"
-  ERR_FILE="/var/log/${PROJECT}/${PROJECT}.err.log"
-  OUT_FILE="/var/log/${PROJECT}/${PROJECT}.out.log"
+  DIR_GITHUB_REPO="/home/${SERVER_USERNAME}/${GITHUB_REPO}/"
+  DIR_LOGS="/var/log/${GITHUB_REPO}/"
 
   sudo apt update
   compute_number_of_workers
   
-  cd /home/${USER}/
+  cd /home/${SERVER_USERNAME}/
   clone_project
-  cd ${DIR_PROJECT}
+  cd ${DIR_GITHUB_REPO}
 
   create_log_files
   

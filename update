@@ -1,30 +1,18 @@
 #! /bin/bash
 # 
-# This script pulls the latest version of the github repository for a project. 
+# This script pulls the latest version of the github repository, GITHUB_REPO. 
 # Supervisor is used to stop the current gunicorn command that runs the
 # website. Any updates to the flask application are made and then supervisor
 # starts a new server.
 # 
 
 main() {
-  USER=$(whoami)
-  # source /home/${USER}/deployment/.env
-  # cd /home/${USER}/${PROJECT}
-  # source venv/bin/activate
-  # /home/${USER}/deployment/stop
-  # git pull
-  # flask db upgrade
-  # /home/${USER}/deployment/start
-
-  source /home/${USER}/deployment/.env
-  cd /home/${USER}/${PROJECT}
+  source .env
+  cd /home/${SERVER_USERNAME}/${GITHUB_REPO}
   source venv/bin/activate
-  echo "git pull > /dev/null"
   git pull > /dev/null
-  echo "supervisorctl start ${PROJECT}"
-  supervisorctl start ${PROJECT} > /dev/null
+  supervisorctl reload ${GITHUB_REPO} > /dev/null
   return 0
-
 }
 
 main

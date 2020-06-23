@@ -1,14 +1,13 @@
 #! /bin/bash
 # 
-# This script informs supervisor to start a given project that is specified in
+# This script informs supervisor to start a given GITHUB_REPO that is specified in
 # the config.sh file.
 # 
 
 main() {
   USER=$(whoami)
   source /home/${USER}/deployment/.env
-  supervisorctl start ${PROJECT}
-  return 0
+  supervisorctl start ${GITHUB_REPO}
 }
 
 main

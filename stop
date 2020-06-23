@@ -1,13 +1,12 @@
 #! /bin/bash
 # 
-# This script informs supervisor to stop a given project that is specified in
+# This script informs supervisor to stop a given GITHUB_REPO that is specified in
 # the config.sh file.
 # 
 
 main() {
-  USER=$(whoami)
-  source /home/${USER}/deployment/.env
-  supervisorctl stop ${PROJECT}
+  source .env
+  supervisorctl stop ${GITHUB_REPO}
   return 0
 }
 
